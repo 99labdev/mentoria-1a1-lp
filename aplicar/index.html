@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aplicação · Mentoria 1-a-1 core</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Dotemp';src:url('/fonts/DotempRegular.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Dotemp 8bit';src:url('/fonts/Dotemp8bit.ttf') format('truetype');font-display:swap}
+:root{
+  --bg:#1C1B18; --bg2:#242220; --bg3:#2D2A26;
+  --ink:#EFE6D8; --ink2:#BBAF9B; --muted:#8A8170;
+  --coral:#C1502E; --coral-h:#D46444; --border:#39352F;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:'Instrument Sans',sans-serif;min-height:100svh;line-height:1.55}
+b{color:var(--ink);font-weight:600}
+
+#progress-track{position:fixed;top:0;left:0;right:0;height:3px;background:var(--bg3);z-index:10}
+#progress{height:100%;width:0;background:var(--coral);transition:width .4s ease}
+
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:28px;opacity:0;pointer-events:none;transform:translateY(18px);transition:opacity .4s ease,transform .4s ease}
+.screen.active{opacity:1;pointer-events:auto;transform:translateY(0)}
+.screen.leaving{opacity:0;transform:translateY(-18px)}
+.inner{width:100%;max-width:620px}
+
+.brand{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-bottom:26px}
+.brand .c{color:var(--coral)}
+.step-label{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.09em;color:var(--coral);margin-bottom:14px;text-transform:uppercase}
+h1{font-family:'Dotemp',serif;font-weight:400;font-size:clamp(28px,4.6vw,42px);line-height:1.15;margin-bottom:14px}
+.hot{font-family:'Dotemp 8bit',serif;color:var(--coral);font-style:italic;display:inline-block;transform:skewX(-6deg)}
+.sub{color:var(--ink2);font-size:16px;max-width:480px;margin-bottom:30px}
+.hint{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);margin-top:12px;letter-spacing:.02em}
+
+.input-wrap{margin-top:6px}
+input,textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:3px;color:var(--ink);font-family:'Instrument Sans',sans-serif;font-size:18px;padding:16px 18px;outline:none;transition:border-color .18s}
+input:focus,textarea:focus{border-color:var(--coral)}
+textarea{min-height:130px;resize:vertical}
+::placeholder{color:var(--muted)}
+
+.options{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.opt{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:14px 18px;cursor:pointer;font-size:15.5px;color:var(--ink2);transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--muted)}
+.opt.selected{border-color:var(--coral);background:var(--bg3);color:var(--ink)}
+.opt .key{font-family:'IBM Plex Mono',monospace;font-size:11px;border:1px solid var(--border);border-radius:2px;padding:2px 7px;color:var(--muted);flex-shrink:0}
+.opt.selected .key{border-color:var(--coral);color:var(--coral)}
+
+.actions{display:flex;align-items:center;gap:18px;margin-top:30px}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--coral);color:#181410;font-weight:600;font-size:16px;padding:15px 32px;border-radius:2px;border:none;cursor:pointer;font-family:'Instrument Sans',sans-serif;transition:background .18s}
+.btn:hover{background:var(--coral-h)}
+.btn.light{background:var(--ink)}
+.btn.light:hover{background:#fff}
+.enter-hint{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted)}
+.enter-hint b{color:var(--ink2);font-weight:500}
+.error-msg{display:none;color:var(--coral-h);font-family:'IBM Plex Mono',monospace;font-size:12.5px;margin-top:10px}
+
+#nav{position:fixed;bottom:26px;right:26px;display:none;gap:8px;z-index:10}
+#nav.show{display:flex}
+#nav button{background:var(--bg2);border:1px solid var(--border);border-radius:3px;color:var(--ink2);width:42px;height:42px;font-size:16px;cursor:pointer;transition:background .15s}
+#nav button:hover:not(:disabled){background:var(--bg3);color:var(--ink)}
+#nav button:disabled{opacity:.35;cursor:default}
+
+.final-check{width:58px;height:58px;border-radius:50%;border:2px solid var(--coral);display:flex;align-items:center;justify-content:center;color:var(--coral);font-size:24px;margin-bottom:24px}
+a.wpp{display:inline-flex;align-items:center;gap:10px;background:var(--coral);color:#181410;font-weight:600;font-size:16px;padding:16px 32px;border-radius:2px;text-decoration:none;transition:background .18s;margin-top:6px}
+a.wpp:hover{background:var(--coral-h)}
+</style>
+</head>
+<body>
+
+<div id="progress-track"><div id="progress"></div></div>
+
+<!-- INTRO -->
+<div class="screen active" data-step="intro">
+  <div class="inner">
+    <div class="brand">MENTORIA 1-A-1 · <span class="c">core</span></div>
+    <h1>Quero te conhecer <span class="hot">antes</span> de te aceitar.</h1>
+    <p class="sub">Essa mentoria é individual e as vagas são pouquíssimas. Eu leio pessoalmente cada aplicação e só chamo quem faz sentido. Leva 2 minutos.</p>
+    <div class="actions">
+      <button class="btn light" onclick="startForm()">Começar aplicação</button>
+      <span class="enter-hint">pressione <b>Enter ↵</b></span>
+    </div>
+  </div>
+</div>
+
+<!-- 1 · NOME -->
+<div class="screen" data-step="1">
+  <div class="inner">
+    <div class="step-label">1 de 10</div>
+    <h1>Qual seu nome?</h1>
+    <div class="input-wrap"><input id="f-name" type="text" placeholder="Seu nome completo" autocomplete="name"></div>
+    <div class="error-msg" id="err-1">Escreve teu nome pra gente continuar.</div>
+    <div class="actions"><button class="btn" onclick="next()">Continuar</button><span class="enter-hint"><b>Enter ↵</b></span></div>
+  </div>
+</div>
+
+<!-- 2 · INSTAGRAM -->
+<div class="screen" data-step="2">
+  <div class="inner">
+    <div class="step-label">2 de 10</div>
+    <h1>Seu @ do Instagram?</h1>
+    <div class="input-wrap"><input id="f-instagram" type="text" placeholder="@seuperfil"></div>
+    <div class="hint">É por onde eu vou te conhecer primeiro.</div>
+    <div class="error-msg" id="err-2">Coloca teu @ (pode ser sem o @).</div>
+    <div class="actions"><button class="btn" onclick="next()">Continuar</button><span class="enter-hint"><b>Enter ↵</b></span></div>
+  </div>
+</div>
+
+<!-- 3 · WHATSAPP -->
+<div class="screen" data-step="3">
+  <div class="inner">
+    <div class="step-label">3 de 10</div>
+    <h1>Seu WhatsApp?</h1>
+    <div class="input-wrap"><input id="f-whatsapp" type="tel" placeholder="(00) 90000-0000" autocomplete="tel"></div>
+    <div class="hint">Se a aplicação for aprovada, o contato vem por aqui.</div>
+    <div class="error-msg" id="err-3">Confere o número — precisa do DDD.</div>
+    <div class="actions"><button class="btn" onclick="next()">Continuar</button><span class="enter-hint"><b>Enter ↵</b></span></div>
+  </div>
+</div>
+
+<!-- 4 · EMAIL -->
+<div class="screen" data-step="4">
+  <div class="inner">
+    <div class="step-label">4 de 10</div>
+    <h1>Seu melhor e-mail?</h1>
+    <div class="input-wrap"><input id="f-email" type="email" placeholder="voce@email.com" autocomplete="email"></div>
+    <div class="error-msg" id="err-4">Esse e-mail não parece válido.</div>
+    <div class="actions"><button class="btn" onclick="next()">Continuar</button><span class="enter-hint"><b>Enter ↵</b></span></div>
+  </div>
+</div>
+
+<!-- 5 · MOMENTO -->
+<div class="screen" data-step="5">
+  <div class="inner">
+    <div class="step-label">5 de 10</div>
+    <h1>Qual seu momento hoje?</h1>
+    <div class="options" data-field="momento">
+      <div class="opt" data-value="clt"><span class="key">A</span>CLT, quero construir algo meu</div>
+      <div class="opt" data-value="freela_agencia"><span class="key">B</span>Freelancer ou tenho agência</div>
+      <div class="opt" data-value="ja_vendo_digital"><span class="key">C</span>Já vendo no digital (info, serviço, SaaS)</div>
+      <div class="opt" data-value="empresario"><span class="key">D</span>Empresário ou expert com audiência</div>
+      <div class="opt" data-value="comecando_zero"><span class="key">E</span>Começando do absoluto zero</div>
+    </div>
+  </div>
+</div>
+
+<!-- 6 · FATURAMENTO -->
+<div class="screen" data-step="6">
+  <div class="inner">
+    <div class="step-label">6 de 10</div>
+    <h1>Quanto você fatura por mês hoje?</h1>
+    <div class="hint" style="margin:-4px 0 16px">Sem julgamento. Isso muda completamente o plano que a gente monta.</div>
+    <div class="options" data-field="faturamento">
+      <div class="opt" data-value="zero"><span class="key">A</span>Ainda não faturo</div>
+      <div class="opt" data-value="ate_3k"><span class="key">B</span>Até R$3 mil</div>
+      <div class="opt" data-value="3k_10k"><span class="key">C</span>R$3 mil a R$10 mil</div>
+      <div class="opt" data-value="10k_30k"><span class="key">D</span>R$10 mil a R$30 mil</div>
+      <div class="opt" data-value="30k_mais"><span class="key">E</span>Acima de R$30 mil</div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 · EXPERIENCIA IA -->
+<div class="screen" data-step="7">
+  <div class="inner">
+    <div class="step-label">7 de 10</div>
+    <h1>Qual sua experiência com IA?</h1>
+    <div class="options" data-field="experiencia_ia">
+      <div class="opt" data-value="nenhuma"><span class="key">A</span>Quase nenhuma, tô começando agora</div>
+      <div class="opt" data-value="chatgpt"><span class="key">B</span>Uso ChatGPT no dia a dia</div>
+      <div class="opt" data-value="testei_claude"><span class="key">C</span>Já testei Claude Code / automações</div>
+      <div class="opt" data-value="uso_avancado"><span class="key">D</span>Uso Claude Code e tenho automações rodando</div>
+    </div>
+  </div>
+</div>
+
+<!-- 8 · MOTIVO -->
+<div class="screen" data-step="8">
+  <div class="inner">
+    <div class="step-label">8 de 10</div>
+    <h1>Por que você quer essa mentoria?</h1>
+    <div class="input-wrap"><textarea id="f-motivo" placeholder="Escreve com suas palavras..."></textarea></div>
+    <div class="hint">Me conta teu objetivo. O que precisa acontecer nos próximos meses pra você considerar que valeu?</div>
+    <div class="error-msg" id="err-8">Me dá pelo menos uma frase — é o que eu mais leio.</div>
+    <div class="actions"><button class="btn" onclick="next()">Continuar</button><span class="enter-hint"><b>Enter ↵</b> · Shift+Enter quebra linha</span></div>
+  </div>
+</div>
+
+<!-- 9 · INVESTIMENTO -->
+<div class="screen" data-step="9">
+  <div class="inner">
+    <div class="step-label">9 de 10</div>
+    <h1>Quanto você tem disponível pra investir em uma mentoria hoje?</h1>
+    <div class="hint" style="margin:-4px 0 16px">Sendo direto: isso define o quanto a gente consegue se envolver no teu jogo.</div>
+    <div class="options" data-field="investimento">
+      <div class="opt" data-value="menos_2500"><span class="key">A</span>Menos de R$2.500</div>
+      <div class="opt" data-value="2500_5k"><span class="key">B</span>R$2.500 a R$5 mil</div>
+      <div class="opt" data-value="5k_8k"><span class="key">C</span>R$5 mil a R$8 mil</div>
+      <div class="opt" data-value="8k_15k"><span class="key">D</span>R$8 mil a R$15 mil</div>
+      <div class="opt" data-value="15k_mais"><span class="key">E</span>Acima de R$15 mil</div>
+    </div>
+  </div>
+</div>
+
+<!-- 10 · URGENCIA -->
+<div class="screen" data-step="10">
+  <div class="inner">
+    <div class="step-label">10 de 10</div>
+    <h1>Quando você quer começar?</h1>
+    <div class="options" data-field="urgencia">
+      <div class="opt" data-value="imediato"><span class="key">A</span>Imediatamente, tô pronto</div>
+      <div class="opt" data-value="proximas_semanas"><span class="key">B</span>Nas próximas semanas</div>
+      <div class="opt" data-value="pesquisando"><span class="key">C</span>Ainda tô só pesquisando</div>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL -->
+<div class="screen" data-step="final">
+  <div class="inner">
+    <div class="final-check">✓</div>
+    <h1>Aplicação <span class="hot">recebida.</span></h1>
+    <p class="sub">Agora manda mensagem no meu WhatsApp pra eu confirmar sua aplicação e te chamar pra call.</p>
+    <a class="wpp" id="wpp-cta" href="#" target="_blank">Confirmar no WhatsApp →</a>
+    <div class="hint" style="margin-top:20px">Só assim eu consigo te responder rápido — o WhatsApp bloqueia mensagens iniciadas do meu lado pra evitar spam.</div>
+  </div>
+</div>
+
+<div id="nav">
+  <button id="nav-back" onclick="back()">↑</button>
+  <button id="nav-fwd" onclick="next()">↓</button>
+</div>
+
+<script>
+// === SUPABASE (projeto de leads do 99lab) ===
+// TODO: preencha com o SEU projeto Supabase antes de publicar.
+// A tabela precisa de uma RPC security-definer `mentoria_upsert(p jsonb)`
+// que faz UPSERT em `mentoria_aplicacoes` (sem policy de SELECT/UPDATE anon).
+const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';
+const SUPABASE_KEY = 'SUA_PUBLISHABLE_KEY_AQUI';
+const TABLE = 'mentoria_aplicacoes';
+
+// === WHATSAPP DE DESTINO (formato E.164 sem +) ===
+// TODO: troque pelo número que vai receber os leads. Ex.: '5511999999999'
+const WPP_NUM = 'SEU_NUMERO_WHATSAPP';
+
+// === STATE ===
+const steps = ['intro','1','2','3','4','5','6','7','8','9','10','final'];
+let current = 0;
+const answers = {};
+
+// UUID persistente pra progressive save (UPSERT)
+const LEAD_ID = (crypto.randomUUID ? crypto.randomUUID() : Date.now()+'-'+Math.random().toString(36).slice(2));
+
+// UTM capture
+const qs = new URLSearchParams(location.search);
+['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(k=>{
+  if(qs.get(k)) answers[k] = qs.get(k);
+});
+answers.user_agent = navigator.userAgent;
+answers.referrer = document.referrer || null;
+
+// Fields válidos na tabela (evita mandar coisas extras)
+const DB_FIELDS = ['name','email','whatsapp','instagram','momento','faturamento','experiencia_ia','motivo','investimento','urgencia','utm_source','utm_medium','utm_campaign','utm_content','utm_term','user_agent','referrer'];
+
+async function saveProgress(stepIdx, extra){
+  const body = { id: LEAD_ID, last_step: stepIdx, updated_at: new Date().toISOString() };
+  DB_FIELDS.forEach(f => { if (answers[f] !== undefined && answers[f] !== null && answers[f] !== '') body[f] = answers[f]; });
+  if (extra) Object.assign(body, extra);
+  try {
+    // UPSERT via RPC security definer (sem policy de SELECT/UPDATE anon —
+    // ninguém lê os leads pela anon key; padrão das LPs do Max)
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/mentoria_upsert`, {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'apikey': SUPABASE_KEY
+      },
+      body: JSON.stringify({ p: body })
+    });
+    if (!res.ok) console.warn('Save failed', res.status, await res.text());
+  } catch(err) { console.warn('Save error:', err); }
+}
+
+function screenEl(i){ return document.querySelector(`.screen[data-step="${steps[i]}"]`); }
+
+function goTo(i){
+  if(i<0 || i>=steps.length) return;
+  const from = screenEl(current), to = screenEl(i);
+  from.classList.add('leaving'); from.classList.remove('active');
+  setTimeout(()=>from.classList.remove('leaving'),450);
+  to.classList.add('active');
+  current = i;
+  // progress: 10 perguntas
+  const qIndex = Math.max(0, Math.min(current, steps.length-2));
+  document.getElementById('progress').style.width = (qIndex/(steps.length-2)*100)+'%';
+  // nav
+  const nav = document.getElementById('nav');
+  if(steps[current]==='intro' || steps[current]==='final') nav.classList.remove('show');
+  else nav.classList.add('show');
+  document.getElementById('nav-back').disabled = current<=1;
+  // autofocus input
+  setTimeout(()=>{ const inp = to.querySelector('input,textarea'); if(inp && window.innerWidth>600) inp.focus(); },480);
+  // Progressive save: só grava quando já tem whatsapp preenchido
+  // (evita "leads fantasmas" que só carregaram a tela e saíram)
+  if(steps[current] !== 'intro' && steps[current] !== 'final' && answers.whatsapp) {
+    saveProgress(qIndex);
+  }
+}
+
+function startForm(){ goTo(1); }
+
+// === VALIDATION ===
+function validate(step){
+  const err = document.getElementById('err-'+step);
+  if(err) err.style.display='none';
+  let ok = true, val = '';
+  if(step==='1'){ val = document.getElementById('f-name').value.trim(); ok = val.length>=2; if(ok) answers.name = val; }
+  if(step==='2'){ val = document.getElementById('f-instagram').value.trim().replace(/^@/,''); ok = val.length>=2; if(ok) answers.instagram = '@'+val; }
+  if(step==='3'){ val = document.getElementById('f-whatsapp').value.replace(/\D/g,''); ok = val.length>=10; if(ok){ if(val.length===10||val.length===11) val='55'+val; answers.whatsapp = val; } }
+  if(step==='4'){ val = document.getElementById('f-email').value.trim(); ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val); if(ok) answers.email = val; }
+  if(step==='8'){ val = document.getElementById('f-motivo').value.trim(); ok = val.length>=10; if(ok) answers.motivo = val; }
+  if(!ok && err) err.style.display='block';
+  return ok;
+}
+
+function next(){
+  const step = steps[current];
+  if(['1','2','3','4','8'].includes(step) && !validate(step)) return;
+  if(['5','6','7','9','10'].includes(step) && !answers[screenEl(current).querySelector('.options').dataset.field]) return;
+  if(step==='10'){ submit(); return; }
+  goTo(current+1);
+}
+function back(){ if(current>1) goTo(current-1); }
+
+// option clicks: select + auto advance
+document.querySelectorAll('.options').forEach(group=>{
+  group.querySelectorAll('.opt').forEach(opt=>{
+    opt.addEventListener('click',()=>{
+      group.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+      opt.classList.add('selected');
+      answers[group.dataset.field] = opt.dataset.value;
+      setTimeout(next, 320);
+    });
+  });
+});
+
+// keyboard
+document.addEventListener('keydown',e=>{
+  const step = steps[current];
+  if(e.key==='Enter'){
+    if(step==='final') return;
+    if(step==='8' && e.shiftKey) return; // newline no textarea
+    e.preventDefault(); next();
+  }
+  // letras A-E nas telas de opção
+  if(['5','6','7','9','10'].includes(step)){
+    const idx = ['a','b','c','d','e'].indexOf(e.key.toLowerCase());
+    if(idx>=0){
+      const opts = screenEl(current).querySelectorAll('.opt');
+      if(opts[idx]) opts[idx].click();
+    }
+  }
+});
+
+// === SCORING calibrado pra ticket R$10K ===
+// "quente" = tem o dinheiro DECLARADO (8k+) e perfil pra usar agora.
+// faturamento pesa mais: quem fatura 10k+/mês paga 10k com fluxo de caixa.
+function computeScore(a){
+  let s = 0;
+  s += ({zero:0, ate_3k:4, '3k_10k':10, '10k_30k':20, '30k_mais':25})[a.faturamento] ?? 0;
+  s += ({nenhuma:4, chatgpt:8, testei_claude:12, uso_avancado:15})[a.experiencia_ia] ?? 0;
+  s += ({menos_2500:0, '2500_5k':10, '5k_8k':22, '8k_15k':36, '15k_mais':40})[a.investimento] ?? 0;
+  s += ({imediato:20, proximas_semanas:12, pesquisando:2})[a.urgencia] ?? 0;
+  return s; // max 100
+}
+
+// === SUBMIT ===
+async function submit(){
+  const score = computeScore(answers);
+  // regras pro ticket de R$10K:
+  // - menos de R$2.500 declarado = descartado, independente do resto
+  // - QUENTE exige investimento declarado 8k+ (senão não paga 10k) + score >= 65
+  // - MORNO = score >= 45 (ex.: declarou 5-8k mas fatura bem e tá com pressa → negociável)
+  const temQuantia = ['8k_15k','15k_mais'].includes(answers.investimento);
+  const temperatura = answers.investimento==='menos_2500' ? 'descartado'
+    : (temQuantia && score>=65) ? 'quente' : score>=45 ? 'morno' : 'frio';
+  await saveProgress(11, { score, temperatura, completed: true, completed_at: new Date().toISOString() });
+
+  // Personaliza o botão WhatsApp da tela final com nome + link direto pro Max
+  const primeiroNome = (answers.name || '').trim().split(/\s+/)[0] || '';
+  const saudacao = primeiroNome ? `Fala Max! É o ${primeiroNome}, acabei de preencher o formulário da mentoria. Quero marcar uma call contigo.` : 'Fala Max! Acabei de preencher o formulário da mentoria. Quero marcar uma call contigo.';
+  const wppLink = `https://wa.me/${WPP_NUM}?text=${encodeURIComponent(saudacao)}`;
+  const cta = document.getElementById('wpp-cta');
+  if (cta) cta.href = wppLink;
+
+  goTo(steps.indexOf('final'));
+}
+</script>
+</body>
+</html>

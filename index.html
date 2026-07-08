@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mentoria 1-a-1 · core — Tua operação rodando com Claude Code</title>
+<meta name="description" content="Mentoria individual com Max Carrau e Felipe Tâmbara. 8 encontros 1-a-1 pra montar tua operação inteira com Claude Code. Aplicação analisada pessoalmente.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Dotemp';src:url('/fonts/DotempRegular.ttf') format('truetype');font-display:swap}
+@font-face{font-family:'Dotemp 8bit';src:url('/fonts/Dotemp8bit.ttf') format('truetype');font-display:swap}
+:root{
+  --bg:#1C1B18; --bg2:#242220; --bg3:#2D2A26;
+  --ink:#EFE6D8; --ink2:#BBAF9B; --muted:#8A8170;
+  --coral:#C1502E; --coral-h:#D46444; --coral-p:#A23F22;
+  --border:#39352F;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Instrument Sans',sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.kicker{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.kicker.coral{color:var(--coral)}
+h1,h2{font-family:'Dotemp',serif;font-weight:400;line-height:1.12;letter-spacing:.005em}
+h1{font-size:clamp(34px,5.2vw,58px)}
+h2{font-size:clamp(28px,4vw,44px)}
+.hot{font-family:'Dotemp 8bit',serif;color:var(--coral);font-style:italic;transform:skewX(-6deg);display:inline-block}
+p.sub{color:var(--ink2);font-size:17px;max-width:520px}
+b{color:var(--ink);font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--coral);color:#181410;font-family:'Instrument Sans',sans-serif;font-weight:600;font-size:16px;padding:16px 32px;border-radius:2px;border:none;cursor:pointer;transition:background .18s}
+.btn:hover{background:var(--coral-h)}
+.btn .arr{transition:transform .18s}
+.btn:hover .arr{transform:translateX(4px)}
+.micro{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;color:var(--muted);margin-top:12px}
+.micro .dot{color:var(--coral)}
+section{padding:96px 0;border-top:1px solid var(--border)}
+.sechead{margin-bottom:48px}
+.sechead .kicker{margin-bottom:14px;display:block}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:50;background:rgba(28,27,24,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+nav .logo{height:20px;width:auto}
+nav .links{display:flex;gap:26px;font-size:14px;color:var(--ink2)}
+nav .links a:hover{color:var(--ink)}
+nav .aplicar{background:var(--ink);color:#181410;font-weight:600;font-size:14px;padding:9px 22px;border-radius:999px}
+nav .aplicar:hover{background:#fff}
+@media(max-width:720px){nav .links{display:none}}
+
+/* HERO */
+.hero{padding:88px 0 110px;border-top:none}
+.hero .grid{display:grid;grid-template-columns:1fr 1.15fr;gap:56px;align-items:center}
+@media(max-width:860px){.hero .grid{grid-template-columns:1fr}}
+.hero-img{border:1px solid var(--border);border-radius:4px;overflow:hidden;background:var(--bg2);position:relative;aspect-ratio:1/1}
+.hero-img img{width:100%;height:100%;object-fit:cover;filter:saturate(.92)}
+.hero-img .tag{position:absolute;left:14px;bottom:12px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;color:var(--ink);text-transform:uppercase}
+.hero-img .tag .dot{color:var(--coral)}
+.badges{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 30px}
+.badge{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink2);border:1px solid var(--border);border-radius:999px;padding:7px 16px;background:var(--bg2)}
+.hero p.sub{margin-top:20px}
+
+/* TICKER */
+.ticker{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2);padding:16px 0;overflow:hidden}
+.ticker .inner{display:flex;gap:56px;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.06em;color:var(--ink2);text-transform:uppercase;flex-wrap:wrap}
+.ticker .inner span::before{content:"·";color:var(--coral);margin-right:56px}
+.ticker .inner span:first-child::before{content:""}
+
+/* JANELA + PROVA */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+@media(max-width:860px){.split{grid-template-columns:1fr}}
+.provaimg{border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.stat-halo{aspect-ratio:1;border-radius:50%;border:2px solid var(--coral);box-shadow:0 0 90px rgba(193,80,46,.35), inset 0 0 60px rgba(193,80,46,.15);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;max-width:400px;margin:0 auto}
+.stat-halo .lbl{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--ink2);text-transform:uppercase}
+.stat-halo .big{font-family:'Dotemp 8bit',serif;font-size:clamp(40px,6vw,64px);color:var(--coral);font-style:italic}
+.stat-halo .sub2{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--muted);letter-spacing:.06em}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+
+/* CHECKS qualificação */
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:40px 0}
+@media(max-width:720px){.checks{grid-template-columns:1fr}}
+.check{display:flex;gap:14px;align-items:flex-start;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:18px 20px;font-size:14.5px;color:var(--ink2)}
+.check .ic{color:var(--coral);font-family:'IBM Plex Mono',monospace;flex-shrink:0;margin-top:1px}
+
+/* METODOLOGIA cards */
+.cards3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.cards3{grid-template-columns:1fr}}
+.mcard{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:28px 24px}
+.mcard .num{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:3px 8px;color:var(--coral);display:inline-block;margin-bottom:16px}
+.mcard h3{font-family:'Instrument Sans',sans-serif;font-weight:600;font-size:18px;margin-bottom:10px}
+.mcard p{font-size:14px;color:var(--ink2)}
+
+/* CTA central */
+.ctaline{text-align:center;padding:80px 0}
+.ctaline h2{margin-bottom:10px}
+.ctaline .grey{color:var(--muted)}
+.ctaline p{color:var(--ink2);font-size:15px;margin-bottom:28px}
+
+/* MENTORES */
+.mentor{display:grid;grid-template-columns:1fr 1.3fr;gap:48px;align-items:start}
+@media(max-width:860px){.mentor{grid-template-columns:1fr}}
+.mentor + .mentor{margin-top:72px}
+.mentor .foto{border:1px solid var(--border);border-radius:4px;overflow:hidden;position:relative;aspect-ratio:1/1}
+.mentor .foto img{width:100%;height:100%;object-fit:cover}
+.mentor .foto .tag{position:absolute;left:12px;bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;color:var(--ink);text-transform:uppercase}
+.mentor .foto .tag .dot{color:var(--coral)}
+.mentor h3{font-family:'Dotemp',serif;font-weight:400;font-size:30px;margin:6px 0 18px}
+.mentor .bio p{color:var(--ink2);font-size:15px;margin-bottom:14px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:26px;border-top:1px solid var(--border);margin-top:26px;padding-top:26px}
+.stats .s .v{font-family:'Dotemp',serif;font-size:32px;color:var(--ink)}
+.stats .s .l{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-top:4px}
+
+/* FORMATO */
+.cards2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.cards2{grid-template-columns:1fr}}
+.fcard{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:30px 28px}
+.fcard .pill{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--border);border-radius:999px;padding:5px 13px;color:var(--ink2);display:inline-block;margin-bottom:18px;background:var(--bg3)}
+.fcard h3{font-family:'Instrument Sans',sans-serif;font-weight:600;font-size:20px;margin-bottom:12px}
+.fcard p{font-size:14.5px;color:var(--ink2);margin-bottom:16px}
+.fcard ul{list-style:none}
+.fcard li{font-size:14px;color:var(--ink2);padding:7px 0;border-top:1px solid var(--border);display:flex;gap:12px}
+.fcard li::before{content:"—";color:var(--coral)}
+
+/* STACK */
+.stack{background:var(--bg2);border:1px solid var(--border);border-radius:6px;max-width:640px;margin:0 auto;padding:44px 40px;position:relative}
+.stack .pill{position:absolute;top:-13px;left:40px;background:var(--ink);color:#181410;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;padding:5px 14px;border-radius:999px;text-transform:uppercase;font-weight:500}
+.stack ul{list-style:none;margin-bottom:30px}
+.stack li{padding:11px 0;font-size:15px;color:var(--ink2);display:flex;gap:12px;align-items:baseline}
+.stack li .ck{color:var(--coral);font-family:'IBM Plex Mono',monospace}
+.stack li b{color:var(--ink)}
+.stack .center{text-align:center}
+
+/* FAQ */
+.faq{max-width:680px;margin:0 auto}
+.faq details{background:var(--bg2);border:1px solid var(--border);border-radius:4px;margin-bottom:10px}
+.faq summary{cursor:pointer;padding:18px 22px;font-weight:500;font-size:15px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.faq summary::after{content:"+";color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:18px}
+.faq details[open] summary::after{content:"–"}
+.faq .a{padding:0 22px 20px;color:var(--ink2);font-size:14.5px}
+
+footer{border-top:1px solid var(--border);padding:48px 0;text-align:center}
+footer .brand{font-family:'Dotemp',serif;font-size:20px}
+footer p{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--muted);margin-top:10px;letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#"><img class="logo" src="/img/core-wordmark.png" alt="core"></a>
+    <div class="links">
+      <a href="#janela">A janela</a>
+      <a href="#metodo">Metodologia</a>
+      <a href="#formato">Formato</a>
+      <a href="#mentores">Mentores</a>
+    </div>
+    <a class="aplicar" href="/aplicar/">Aplicar</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap grid">
+    <div class="hero-img">
+      <img src="/img/hero-max.png" alt="Max Carrau">
+      <div class="tag"><span class="dot">●</span> MAX CARRAU · OPERAÇÃO 100% CLAUDE CODE</div>
+    </div>
+    <div>
+      <span class="kicker">MENTORIA INDIVIDUAL · CORE · VAGAS LIMITADAS</span>
+      <h1 style="margin-top:16px">Tua <span class="hot">operação</span> inteira rodando com Claude Code. Em 8 semanas. <span class="hot">1-a-1</span>.</h1>
+      <p class="sub">Meu Instagram posta sozinho. Meus leads entram sozinhos. Minha empresa roda em cima de um <b>segundo cérebro</b>. Agora eu sento do teu lado pra montar <b>o teu</b> — você não vai aprender: vai <b>copiar</b>.</p>
+      <div class="badges">
+        <span class="badge">8 encontros 1-a-1</span>
+        <span class="badge">Zero turma, zero aula gravada</span>
+        <span class="badge">Max + Felipe no teu jogo</span>
+      </div>
+      <a class="btn" href="/aplicar/">APLICAR PRA CALL <span class="arr">→</span></a>
+      <div class="micro"><span class="dot">●</span> Cada aplicação é lida por mim. Fecho quando lotar.</div>
+    </div>
+  </div>
+</header>
+
+<div class="ticker">
+  <div class="inner">
+    <span>Segundo cérebro</span>
+    <span>Claude Code</span>
+    <span>Operação no automático</span>
+  </div>
+</div>
+
+<!-- A JANELA -->
+<section id="janela">
+  <div class="wrap split">
+    <div>
+      <span class="kicker coral">A JANELA</span>
+      <h2 style="margin:14px 0 22px">Todo negócio vai rodar assim. Quem monta <span class="hot">primeiro</span>, cobra na frente.</h2>
+      <p class="sub"><b>Claude Code</b> deixou de ser coisa de programador. Hoje ele monta funil, posta conteúdo, responde lead, organiza a empresa inteira — <b>sem time de dev</b>. Antes, você precisava de engenharia pra ter isso. Hoje, um operador bem treinado faz sozinho. <b>A janela tá aberta pra quem entrar primeiro.</b></p>
+    </div>
+    <div class="stat-halo">
+      <span class="lbl">Minha operação</span>
+      <span class="big">24/7</span>
+      <span class="sub2">POSTA · CAPTA · VENDE · SOZINHA</span>
+    </div>
+  </div>
+</section>
+
+<!-- PROVA AO VIVO -->
+<section>
+  <div class="wrap split">
+    <div>
+      <span class="kicker coral">PROVA AO VIVO</span>
+      <h2 style="margin:14px 0 22px">Não é teoria. É o <span class="hot">meu sistema</span> rodando agora.</h2>
+      <p class="sub">Não é print antigo, não é projeção. Enquanto você lê isso: meu agendador tá publicando o próximo reel, meu funil tá colocando leads no WhatsApp e minha comunidade tá vendendo — <b>tudo construído com Claude Code</b>, do zero, sem contratar um dev.</p>
+      <div class="chips">
+        <span class="badge">Instagram posta sozinho</span>
+        <span class="badge">Funil capta 24/7</span>
+        <span class="badge">Plataforma própria no ar</span>
+      </div>
+    </div>
+    <div class="provaimg" style="position:relative">
+      <img src="/img/prova-operacao.png" alt="Agendador de posts rodando — fila real">
+      <div class="tag" style="position:absolute;left:14px;bottom:12px;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.08em;color:var(--ink);text-transform:uppercase"><span style="color:var(--coral)">●</span> MEU AGENDADOR · FILA REAL DE POSTS</div>
+    </div>
+  </div>
+</section>
+
+<!-- É PRA MIM? -->
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <span class="kicker coral">É PRA MIM?</span>
+      <h2 style="margin-top:14px">Não é pra todo mundo. <span class="hot">Nem quero.</span></h2>
+      <p class="sub" style="margin-top:16px">Se você se ver em <b>3 ou mais</b> abaixo, aplica. Se não, não perde teu tempo.</p>
+    </div>
+    <div class="checks">
+      <div class="check"><span class="ic">&lt;/&gt;</span><span>Você <b>já brincou de Claude Code</b> (ou de IA) e a tua operação continua igual.</span></div>
+      <div class="check"><span class="ic">▣</span><span>Tem negócio, audiência ou serviço rodando — mas <b>tudo depende de você</b> apertar o botão.</span></div>
+      <div class="check"><span class="ic">✎</span><span>Já <b>torrou grana em curso gravado</b> e não saiu do lugar.</span></div>
+      <div class="check"><span class="ic">⇗</span><span>Cansou de <b>trocar tempo por tarefa repetida</b>. Quer sistema, não mais esforço.</span></div>
+      <div class="check"><span class="ic">▶</span><span>Você <b>executa</b>. Não precisa de babá pra abrir o laptop toda semana.</span></div>
+      <div class="check"><span class="ic">◈</span><span>Quer <b>alguém do teu lado</b> olhando pro TEU negócio — não turma de 500 assistindo aula.</span></div>
+    </div>
+    <div style="text-align:center"><a class="btn" href="/aplicar/">Aplicar pra call <span class="arr">→</span></a></div>
+  </div>
+</section>
+
+<!-- METODOLOGIA -->
+<section id="metodo">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="kicker coral">METODOLOGIA</span>
+      <h2 style="margin-top:14px">Três coisas. <span class="hot">Só três.</span></h2>
+      <p class="sub" style="margin-top:16px">Não é curso, não é aula, não é framework. É como <b>eu rodo minha operação</b>, transplantado pro teu negócio.</p>
+    </div>
+    <div class="cards3">
+      <div class="mcard">
+        <span class="num">01</span>
+        <h3>Você entra na minha operação</h3>
+        <p>Não é aula. É a mesa onde meu sistema roda de verdade. Você vê o agendador, o funil, o segundo cérebro — <b>e replica no teu nicho na semana seguinte</b>. Sai com sistema rodando, não com PDF.</p>
+      </div>
+      <div class="mcard">
+        <span class="num">02</span>
+        <h3>Teu segundo cérebro montado</h3>
+        <p>A base de tudo: teu contexto, teus dados e tuas skills organizados pra o Claude trabalhar <b>por você</b>. É o que separa quem "usa IA" de quem tem uma operação.</p>
+      </div>
+      <div class="mcard">
+        <span class="num">03</span>
+        <h3>Nosso olho no teu negócio</h3>
+        <p>Toda semana, individual, cara a cara. Vamos entrar no <b>teu produto, teu conteúdo, teu funil</b>. Não é turma. São encontros só teus. Você trava, a gente destrava.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="ctaline">
+  <div class="wrap">
+    <span class="kicker">PRÓXIMO PASSO</span>
+    <h2 style="margin-top:12px">Eu leio <span style="color:var(--muted)">cada aplicação</span>. Não tem robô.</h2>
+    <p>2 minutos. 10 perguntas. Se fizer sentido, te chamo pra call. Se não, te falo direto.</p>
+    <a class="btn" href="/aplicar/">Aplicar pra call <span class="arr">→</span></a>
+  </div>
+</section>
+
+<!-- MENTORES -->
+<section id="mentores">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="kicker coral">OS MENTORES</span>
+      <h2 style="margin-top:14px">Por que a gente, <span class="hot">e não outro.</span></h2>
+    </div>
+
+    <div class="mentor">
+      <div class="foto">
+        <img src="/img/max-perfil.png" alt="Maximiliano Carrau">
+        <div class="tag"><span class="dot">●</span> MAX CARRAU · CURITIBA / PR</div>
+      </div>
+      <div class="bio">
+        <span class="kicker">MENTOR</span>
+        <h3>Maximiliano Carrau</h3>
+        <p><b>Anti-guru: só mostro a IA que de fato funciona.</b> Antes de falar de IA, faturei <b>+R$100k</b> construindo automações pra empresas de verdade — funil, atendimento, operação.</p>
+        <p>Hoje minha empresa roda <b>100% com Claude Code</b>: o Instagram posta sozinho, o funil capta sozinho, a comunidade vende. No <b>@maxcarrau.ia</b>, construo tudo ao vivo — usando exatamente o que ensino.</p>
+        <p>Não vou te vender teoria. Vou te sentar do meu lado.</p>
+        <div class="stats">
+          <div class="s"><div class="v">+R$100K</div><div class="l">Faturados com automações pra empresas</div></div>
+          <div class="s"><div class="v">100%</div><div class="l">Da minha operação rodando com Claude Code</div></div>
+          <div class="s"><div class="v">20 mil+</div><div class="l">Seguidores no @maxcarrau.ia</div></div>
+          <div class="s"><div class="v">+1,5M</div><div class="l">Views em reels sobre IA na prática</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mentor">
+      <div class="foto">
+        <img src="/img/felipe-perfil.png" alt="Felipe Tâmbara">
+        <div class="tag"><span class="dot">●</span> FELIPE TÂMBARA</div>
+      </div>
+      <div class="bio">
+        <span class="kicker">MENTOR</span>
+        <h3>Felipe Tâmbara</h3>
+        <p><b>Só ensina a IA que ele mesmo usa pra faturar.</b> Antes de falar de IA, fez <b>+R$200k</b> construindo automações e agentes que tiraram processos do custo e botaram empresa pra faturar.</p>
+        <p>No <b>@felipetambara.ia</b>, mostra a rota mais curta de quem sabe IA pra quem <b>fatura</b> com IA — e constrói tudo ao vivo, só com o Claude, usando o que ensina.</p>
+        <div class="stats">
+          <div class="s"><div class="v">+R$200K</div><div class="l">Faturados com automações e agentes</div></div>
+          <div class="s"><div class="v">Backend</div><div class="l">Plataformas e agentes em produção</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FORMATO -->
+<section id="formato">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="kicker coral">FORMATO</span>
+      <h2 style="margin-top:14px">8 encontros. Todos <span class="hot">só teus.</span></h2>
+      <p class="sub" style="margin-top:16px">Individual do início ao fim — <b>sem turma, sem ouvinte</b>. Dois mentores no teu jogo: metade dos encontros com o Max, metade com o Felipe. Dois olhares, uma operação: a tua.</p>
+    </div>
+    <div class="cards2">
+      <div class="fcard">
+        <span class="pill">1-a-1 · COM O MAX</span>
+        <h3>Operação, conteúdo e funil.</h3>
+        <p>Meu olho no teu posicionamento e na tua máquina de aquisição. Você trava, eu destravo.</p>
+        <ul>
+          <li>Segundo cérebro montado do zero</li>
+          <li>Máquina de conteúdo (posta sozinha)</li>
+          <li>Funil captando no automático</li>
+          <li>Diagnóstico e plano com prazo, toda semana</li>
+        </ul>
+      </div>
+      <div class="fcard">
+        <span class="pill">1-a-1 · COM O FELIPE</span>
+        <h3>Agentes, sistemas e automação pesada.</h3>
+        <p>A engenharia da tua operação: agentes rodando em produção, sem depender de você.</p>
+        <ul>
+          <li>Agentes sob medida pro teu negócio</li>
+          <li>Automações que tiram processo do teu colo</li>
+          <li>Integrações: WhatsApp, planilhas, plataformas</li>
+          <li>Tudo em produção, não em demo</li>
+        </ul>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:40px"><a class="btn" href="/aplicar/">Aplicar pra call <span class="arr">→</span></a></div>
+  </div>
+</section>
+
+<!-- STACK -->
+<section>
+  <div class="wrap">
+    <div class="sechead" style="text-align:center">
+      <span class="kicker">O QUE VOCÊ LEVA</span>
+      <h2 style="margin-top:14px">O que eu uso <span style="color:var(--muted)">todo dia</span>. No teu colo.</h2>
+      <p class="sub" style="margin:16px auto 0">Tudo que roda na minha operação — skills, automações, segundo cérebro — você recebe direto, adaptado pro teu negócio.</p>
+    </div>
+    <div class="stack">
+      <span class="pill">Stack completa</span>
+      <ul>
+        <li><span class="ck">✓</span><span><b>8 encontros 1-a-1 ao vivo</b> · em 8 semanas, zero turma</span></li>
+        <li><span class="ck">✓</span><span><b>Dois mentores</b> · metade com o Max, metade com o Felipe</span></li>
+        <li><span class="ck">✓</span><span><b>Segundo cérebro montado</b> · a base da operação, no teu contexto</span></li>
+        <li><span class="ck">✓</span><span><b>Todas as skills</b> que eu uso todo dia (Claude Code, agentes, automações)</span></li>
+        <li><span class="ck">✓</span><span><b>Automações implantadas</b> no teu negócio, rodando em produção</span></li>
+        <li><span class="ck">✓</span><span><b>Gravação</b> de tudo pra rever quando quiser</span></li>
+        <li><span class="ck">✓</span><span><b>WhatsApp direto</b> com a gente entre os encontros</span></li>
+        <li><span class="ck">✓</span><span><b>+30 dias</b> de acompanhamento depois do último encontro</span></li>
+      </ul>
+      <div class="center">
+        <a class="btn" href="/aplicar/">Aplicar pra call <span class="arr">→</span></a>
+        <div class="micro">2 minutos, 10 perguntas. Se fizer sentido, te chamo.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <span class="kicker coral">FAQ</span>
+      <h2 style="margin-top:14px">O que todo mundo pergunta.</h2>
+    </div>
+    <div class="faq">
+      <details><summary>Preciso saber programar?</summary><div class="a">Não. Nenhum dos meus mentorados sabia programar quando começou — tem advogado, empresário, criador. O Claude Code escreve o código; você aprende a operar e a mandar nele. Se você sabe usar WhatsApp, consegue.</div></details>
+      <details><summary>Como funciona a aplicação?</summary><div class="a">10 perguntas, 2 minutos. Eu leio pessoalmente cada uma. Se fizer sentido, te chamo pra uma call de alinhamento — sem compromisso. Se não fizer, te respondo direto dizendo o porquê.</div></details>
+      <details><summary>Por que dois mentores?</summary><div class="a">Porque operação tem dois lados. O Max cuida do jogo de fora: posicionamento, conteúdo, funil, segundo cérebro. O Felipe cuida do jogo de dentro: agentes, integrações, automação pesada em produção. Você leva os dois olhares — coisa que mentoria de uma pessoa só não entrega.</div></details>
+      <details><summary>Quanto tempo por semana?</summary><div class="a">1 encontro ao vivo (~1h) + execução no teu ritmo. Quem executa 3-4h/semana sai com a operação de pé. O que não dá é sumir: a mentoria é individual, o plano é teu e a cobrança também.</div></details>
+      <details><summary>E se eu ainda não tiver negócio?</summary><div class="a">Aí a mentoria não é pra você agora — e tá tudo bem. Ela funciona melhor pra quem já tem negócio, serviço ou audiência rodando e quer colocar a operação no automático. Se você tá começando do zero absoluto, a comunidade core é o caminho certo (e custa 10x menos).</div></details>
+      <details><summary>Quantas vagas?</summary><div class="a">Pouquíssimas por vez — é 1-a-1 de verdade, com dois mentores dividindo a agenda. Quando a agenda fecha, fecho as aplicações sem aviso.</div></details>
+    </div>
+    <div style="text-align:center;margin-top:40px"><a class="btn" href="/aplicar/">Aplicar pra call <span class="arr">→</span></a></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <img src="/img/core-wordmark.png" alt="core" style="height:18px;margin:0 auto 14px">
+    <p>Mentoria individual · Max Carrau &amp; Felipe Tâmbara</p>
+    <p>8 encontros · 1-a-1 · Claude Code aplicado</p>
+    <p style="margin-top:18px">© 2026 core · Curitiba / PR</p>
+  </div>
+</footer>
+
+</body>
+</html>
