@@ -9,10 +9,15 @@ Site estático, zero build: HTML + CSS inline + fontes. Deploy direto na Vercel/
 ```
 index.html          landing principal
 aplicar/index.html  quiz de aplicação (10 perguntas → Supabase → WhatsApp)
-img/                imagens (hero, perfis, prova)
-fonts/              Dotemp (títulos) + Dotemp 8bit (destaques)
+img/                fotos (hero, work, perfil) + logo 99labdev
 supabase.sql        schema + RPC de upsert dos leads
 ```
+
+## Identidade visual (MIV 99LabDev)
+
+- **Cores:** Cinza `#292A25` · Roxo `#B078FF` (principais) · Verde `#3CD3A4` · Amarelo `#D9D353` (secundárias)
+- **Tipografia:** Raleway (títulos 800 + corpo) · IBM Plex Mono (kickers/tech)
+- **Logo:** `img/logo-99labdev.png` (assinatura prioritária, funde no fundo charcoal)
 
 ## Fluxo do /aplicar/
 
