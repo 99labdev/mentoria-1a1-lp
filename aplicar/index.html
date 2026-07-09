@@ -364,6 +364,7 @@ document.querySelectorAll('.options').forEach(group=>{
       group.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
       opt.classList.add('selected');
       answers[group.dataset.field] = opt.dataset.value;
+      answers[group.dataset.field + '_label'] = opt.textContent.replace(/^[A-E]\s*/,'').trim();
       setTimeout(next, 320);
     });
   });
@@ -413,7 +414,23 @@ async function submit(){
 
   // Personaliza o botão WhatsApp da tela final com nome + link direto pro Max
   const primeiroNome = (answers.name || '').trim().split(/\s+/)[0] || '';
-  const saudacao = primeiroNome ? `Fala Max! É o ${primeiroNome}, acabei de preencher o formulário da mentoria. Quero marcar uma call contigo.` : 'Fala Max! Acabei de preencher o formulário da mentoria. Quero marcar uma call contigo.';
+  const PERGUNTAS = {
+    name:'Nome', instagram:'Instagram', whatsapp:'WhatsApp', email:'E-mail',
+    momento:'Momento hoje', faturamento:'Faturamento/mês', experiencia_ia:'Experiência com IA',
+    motivo:'Por que quer a mentoria', investimento:'Investimento disponível', urgencia:'Quando quer começar'
+  };
+  function respostaDe(f){
+    if(answers[f+'_label']) return answers[f+'_label'];
+    if(f==='whatsapp' && answers.whatsapp) return '+'+answers.whatsapp;
+    return answers[f] || '—';
+  }
+  const resumo = Object.keys(PERGUNTAS)
+    .map(f => `• ${PERGUNTAS[f]}: ${respostaDe(f)}`)
+    .join('\n');
+  const abertura = primeiroNome
+    ? `Fala Hudson! É o ${primeiroNome}, acabei de preencher o formulário da mentoria. Quero marcar uma call contigo.`
+    : 'Fala Hudson! Acabei de preencher o formulário da mentoria. Quero marcar uma call contigo.';
+  const saudacao = `${abertura}\n\n*Minha aplicação:*\n${resumo}`;
   const wppLink = `https://wa.me/${WPP_NUM}?text=${encodeURIComponent(saudacao)}`;
   const cta = document.getElementById('wpp-cta');
   if (cta) cta.href = wppLink;
