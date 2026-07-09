@@ -67,6 +67,17 @@ textarea{min-height:130px;resize:vertical}
 a.wpp{display:inline-flex;align-items:center;gap:10px;background:var(--coral);color:#181410;font-weight:600;font-size:16px;padding:16px 32px;border-radius:2px;text-decoration:none;transition:background .18s;margin-top:6px}
 a.wpp:hover{background:var(--coral-h)}
 </style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25/build/css/intlTelInput.css">
+<style>
+.iti{width:100%}
+.iti__selected-dial-code{color:var(--ink)}
+.iti__dropdown-content{background:#292A25;border:1px solid #3A3B31;color:#F2EFE8;border-radius:6px;overflow:hidden}
+.iti__search-input{background:#32332B;color:#F2EFE8;border:none;border-bottom:1px solid #3A3B31}
+.iti__search-input::placeholder{color:#8C897E}
+.iti__country{color:#F2EFE8}
+.iti__country:hover,.iti__country.iti__highlight{background:#32332B}
+.iti__dial-code{color:#8C897E}
+</style>
 </head>
 <body>
 
@@ -233,6 +244,7 @@ a.wpp:hover{background:var(--coral-h)}
   <button id="nav-fwd" onclick="next()">↓</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25/build/js/intlTelInput.min.js"></script>
 <script>
 // === SUPABASE (projeto de leads do 99lab) ===
 // TODO: preencha com o SEU projeto Supabase antes de publicar.
@@ -319,7 +331,18 @@ function validate(step){
   let ok = true, val = '';
   if(step==='1'){ val = document.getElementById('f-name').value.trim(); ok = val.length>=2; if(ok) answers.name = val; }
   if(step==='2'){ val = document.getElementById('f-instagram').value.trim().replace(/^@/,''); ok = val.length>=2; if(ok) answers.instagram = '@'+val; }
-  if(step==='3'){ val = document.getElementById('f-whatsapp').value.replace(/\D/g,''); ok = val.length>=10; if(ok){ if(val.length===10||val.length===11) val='55'+val; answers.whatsapp = val; } }
+  if(step==='3'){
+    var digits = document.getElementById('f-whatsapp').value.replace(/\D/g,'');
+    var _iti = window.iti;
+    var valid = (_iti && typeof _iti.isValidNumber==='function') ? _iti.isValidNumber() : null;
+    ok = (valid===true) || (valid===null && digits.length>=8);
+    if(ok){
+      var full='';
+      try{ if(_iti) full = _iti.getNumber(); }catch(e){}
+      if(!full){ var dc=(_iti && _iti.getSelectedCountryData && _iti.getSelectedCountryData().dialCode)||'55'; full = dc + digits; }
+      answers.whatsapp = full.replace(/\D/g,'');
+    }
+  }
   if(step==='4'){ val = document.getElementById('f-email').value.trim(); ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val); if(ok) answers.email = val; }
   if(step==='8'){ val = document.getElementById('f-motivo').value.trim(); ok = val.length>=10; if(ok) answers.motivo = val; }
   if(!ok && err) err.style.display='block';
@@ -398,6 +421,19 @@ async function submit(){
 
   goTo(steps.indexOf('final'));
 }
+</script>
+<script>
+(function(){
+  var input = document.getElementById('f-whatsapp');
+  if(!input || !window.intlTelInput) return;
+  window.iti = window.intlTelInput(input, {
+    initialCountry: "br",
+    separateDialCode: true,
+    strictMode: true,
+    countryOrder: ["br","pt","us","ar"],
+    loadUtils: function(){ return import("https://cdn.jsdelivr.net/npm/intl-tel-input@25/build/js/utils.js"); }
+  });
+})();
 </script>
 </body>
 </html>
